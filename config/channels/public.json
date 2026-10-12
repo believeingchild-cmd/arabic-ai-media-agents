@@ -1,0 +1,16 @@
+{
+  "channel_id": "public",
+  "name_ar": "القناة العامة",
+  "language": "ar",
+  "enabled": true,
+  "posts_per_week": 3,
+  "approval_mode": "review_first_video",
+  "topics": ["أخبار موثوقة", "ترندات ذات قيمة", "علوم وتقنية", "قصص ملهمة"],
+  "age_appropriate": true,
+  "require_religious_references": false,
+  "require_news_sources": true,
+  "minimum_independent_sources": 2,
+  "blocked_topics": ["الشائعات", "التشهير", "المعلومات الطبية غير الموثقة", "التحريض", "المحتوى المخالف للقانون"],
+  "publishing": {"youtube": true, "tiktok": true, "instagram": true},
+  "notes": "Breaking/current claims require two independent sources and timestamps; otherwise reject or label as unverified and do not publish."
+}
