@@ -266,7 +266,7 @@ def editorial_review(hook, topic):
         language = "en"
     language_note = "Write or preserve the caption in natural Arabic." if language == "ar" else "Write or preserve the caption in natural English."
     prompt = (
-        language_note + '\\n' +
+        language_note + '\n' +
         'You are an expert content editor reviewing a video caption before it goes live.\\n'
         'Topic: "' + (topic or "") + '"\n'
         'Draft: "' + hook + '"\n\n'
@@ -301,7 +301,7 @@ def generate_blog_body(topic, hook):
         language = "en"
     language_note = "Write the blog paragraph in clear, natural Arabic." if language == "ar" else "Write the blog paragraph in English."
     prompt = (
-        language_note + '\\n' +
+        language_note + '\n' +
         'Write a longer blog-post paragraph (120-200 words) about: "' + (topic or "") + '"\\n'
         "This is for a blog reader, not a social caption - give real context and detail, "
         "not just a punchy hook. Warm, engaging tone. Return ONLY the paragraph text, "
