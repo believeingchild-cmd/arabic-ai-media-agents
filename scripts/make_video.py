@@ -20,7 +20,7 @@ _whisper_model = None  # lazy singleton - load once per process, ~4s from cache
 ROOT   = Path(__file__).resolve().parents[1]
 FFMPEG  = os.environ.get("FFMPEG", "ffmpeg")
 FFPROBE = os.environ.get("FFPROBE", "ffprobe")
-EDGE   = os.environ.get("EDGE_TTS") or shutil.which("edge-tts") or str(ROOT/"venv"/"Scripts"/"edge-tts.exe")
+EDGE   = os.environ.get("EDGE_TTS") or shutil.which("edge-tts") or str(ROOT / "venv" / ("Scripts" / "edge-tts.exe" if os.name == "nt" else "bin" / Path("edge-tts")))
 OLLAMA = "http://127.0.0.1:11434/api/generate"
 def _active_model():
     """The single model configured on the Settings page. No fallback chain
