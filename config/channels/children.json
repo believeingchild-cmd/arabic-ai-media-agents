@@ -1,0 +1,15 @@
+{
+  "channel_id": "children",
+  "name_ar": "قناة الأطفال",
+  "language": "ar",
+  "enabled": true,
+  "posts_per_week": 3,
+  "approval_mode": "review_first_video",
+  "topics": ["العقيدة بأسلوب مبسط", "الأخلاق الإسلامية", "المهن", "آداب الحياة اليومية"],
+  "age_appropriate": true,
+  "require_religious_references": true,
+  "require_news_sources": false,
+  "blocked_topics": ["التخويف الديني", "الفتاوى الخلافية دون مراجعة مختص", "العنف الصريح", "المحتوى الجنسي", "إهانة فئة أو دين"],
+  "publishing": {"youtube": true, "tiktok": true, "instagram": true},
+  "notes": "Keep paused until Arabic rendering, review, and platform credentials have been tested."
+}
