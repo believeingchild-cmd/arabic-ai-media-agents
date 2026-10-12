@@ -720,6 +720,23 @@ def main():
                 "-show_entries","stream=codec_name,width,height,bit_rate",
                 "-of","default=noprint_wrappers=1", str(final)])
     vlen = float(re.search(r"duration=([\d.]+)", info).group(1))
+    # Fail-closed review manifest: every video must be explicitly reviewed before publish.py accepts it.
+    try:
+        _active_channel = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("active_channel", "children")
+    except Exception:
+        _active_channel = "children"
+    review_manifest = {
+        "channel": _active_channel if _active_channel in ("children", "public") else "children",
+        "title": title,
+        "script": narration,
+        "video_path": str(final.resolve()),
+        "sources": [],
+        "religious_references": [],
+        "child_safety_review": False,
+        "rights_review": False,
+        "editorial_review": False
+    }
+    (job / "quality_gate.json").write_text(json.dumps(review_manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     db.finish_run(run_id, status="ok", stage="done", scenes=len(scenes),
                   seconds=round(vlen,1), build_secs=round(time.time()-t0,1),
                   size_kb=int(final.stat().st_size/1024), path=str(final))
