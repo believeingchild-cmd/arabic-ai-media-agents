@@ -260,8 +260,14 @@ def editorial_review(hook, topic):
     go through the structural gate but not this style pass, to keep total
     per-video generation time reasonable given how many model calls a video
     already needs."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write or preserve the caption in natural Arabic." if language == "ar" else "Write or preserve the caption in natural English."
     prompt = (
-        'You are an expert content editor reviewing a video caption before it goes live.\n'
+        language_note + '\\n' +
+        'You are an expert content editor reviewing a video caption before it goes live.\\n'
         'Topic: "' + (topic or "") + '"\n'
         'Draft: "' + hook + '"\n\n'
         "Judge it as a professional publisher would: is it clear, engaging, and does it read "
@@ -289,8 +295,14 @@ def generate_blog_body(topic, hook):
     actually gets posted to any social platform, so existing posting behavior
     is completely unchanged. Best-effort: falls back to the short hook if
     generation fails, same as everything else in this pipeline."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write the blog paragraph in clear, natural Arabic." if language == "ar" else "Write the blog paragraph in English."
     prompt = (
-        'Write a longer blog-post paragraph (120-200 words) about: "' + (topic or "") + '"\n'
+        language_note + '\\n' +
+        'Write a longer blog-post paragraph (120-200 words) about: "' + (topic or "") + '"\\n'
         "This is for a blog reader, not a social caption - give real context and detail, "
         "not just a punchy hook. Warm, engaging tone. Return ONLY the paragraph text, "
         "no title, no hashtags, no quotes around it."
