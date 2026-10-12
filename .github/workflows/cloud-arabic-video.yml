@@ -1,0 +1,52 @@
+name: Cloud Arabic Video Pilot
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: Arabic video topic
+        required: true
+        default: "مهنة الطبيب: كيف يساعد الناس؟"
+        type: string
+      channel:
+        description: Channel profile
+        required: true
+        default: children
+        type: choice
+        options: [children, public]
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      VIDEO_TOPIC: ${{ inputs.topic }}
+      VIDEO_CHANNEL: ${{ inputs.channel }}
+      VIDEO_OUTPUT_DIR: out/cloud
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-core fonts-noto-extra
+          python -m pip install --upgrade pip edge-tts
+      - name: Check cloud keys
+        run: |
+          test -n "$OPENAI_API_KEY" || (echo "::error::Missing OPENAI_API_KEY secret" && exit 1)
+          test -n "$ANTHROPIC_API_KEY" || (echo "::error::Missing ANTHROPIC_API_KEY secret" && exit 1)
+          test -n "$GEMINI_API_KEY" || (echo "::error::Missing GEMINI_API_KEY secret" && exit 1)
+      - name: Generate and review
+        run: python scripts/cloud_video.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arabic-video-review-${{ github.run_number }}
+          path: out/cloud/
+          if-no-files-found: warn
+          retention-days: 14
