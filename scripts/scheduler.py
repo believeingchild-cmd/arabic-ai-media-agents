@@ -60,7 +60,11 @@ def _launch_and_watch(args, kind, topic):
 
 TICK = 30          # seconds between schedule checks
 WEEKDAY = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
-PY = str(ROOT / "venv" / "Scripts" / "pythonw.exe")
+PY = os.environ.get("PYTHON") or str(
+    ROOT / "venv" / ("Scripts" / "python.exe" if os.name == "nt" else "bin" / Path("python"))
+)
+if not Path(PY).exists():
+    PY = sys.executable
 STATE_FILE = ROOT / "data" / "scheduler_state.json"
 
 
