@@ -241,5 +241,6 @@
     "enabled": false,
     "username": "admin",
     "password": "change-me"
-  }
+  },
+  "active_channel": "children"
 }
