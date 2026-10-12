@@ -30,12 +30,12 @@
   },
   "topic_sources": {
     "google_trends": {
-      "enabled": true,
+      "enabled": false,
       "weight": 1,
       "note": "pulse check only (news/celebrity heavy - weak for faceless reels)"
     },
     "reddit": {
-      "enabled": true,
+      "enabled": false,
       "weight": 4,
       "subreddits": [
         "todayilearned",
@@ -54,7 +54,7 @@
       "note": "curiosity content + self-healing/spiritual/emotional niche that converts to faceless reels"
     },
     "youtube_trending": {
-      "enabled": true,
+      "enabled": false,
       "weight": 2,
       "search_terms": [
         "mind blowing facts",
@@ -70,16 +70,23 @@
     },
     "manual_list": {
       "enabled": true,
-      "weight": 5,
+      "weight": 10,
       "topics": [
-        "add your own topic ideas here",
-        "one per line",
-        "these rank above scraped topics"
+        "لماذا نقول بسم الله قبل الطعام؟ — آداب إسلامية للأطفال",
+        "مهنة الطبيب: كيف يساعد الناس؟",
+        "الأمانة: قصة قصيرة من الحياة اليومية",
+        "مهنة المزارع: من أين يأتي الطعام؟",
+        "كيف نستأذن قبل دخول الغرفة؟",
+        "مهنة رجل الإطفاء: الشجاعة مع اتباع قواعد السلامة",
+        "الرفق بالحيوان في الإسلام",
+        "مهنة المعلم: كيف يساعدنا على التعلم؟",
+        "الصدق: ماذا نفعل عندما نخطئ؟",
+        "النظافة والترتيب من السلوكيات الجميلة"
       ],
-      "note": "Your hand-picked topics. Ranked above scraped sources."
+      "note": "Arabic-first editorial seed topics for the children pilot; each religious claim must be checked against trusted references."
     },
     "trendpulse": {
-      "enabled": true,
+      "enabled": false,
       "weight": 2,
       "sources": [
         "mastodon",
