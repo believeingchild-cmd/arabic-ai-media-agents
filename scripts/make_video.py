@@ -593,7 +593,11 @@ def main():
     # to reuse (keeps visual style and playlist choice consistent).
     category = variety.classify_category(a.topic)
     style = variety.pick_style(category)
-    voice = variety.pick_voice()
+    try:
+        _rules = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8"))
+    except Exception:
+        _rules = {}
+    voice = _rules.get("voice") or variety.pick_voice()
     hook_format = variety.pick_hook_format()
     (job / "category.txt").write_text(category, encoding="utf-8")
     log(f"    category={category}  style='{style[:40]}...'  voice={voice}")
