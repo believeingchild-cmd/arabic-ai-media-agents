@@ -46,7 +46,7 @@ def openai_text(system: str, user: str) -> str:
 def claude_review(script_text: str) -> str:
     result = request_json(
         "https://api.anthropic.com/v1/messages",
-        {"model": os.getenv("CLAUDE_MODEL", "claude-3-7-sonnet-latest"), "max_tokens": 900,
+        {"model": os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5"), "max_tokens": 900,
          "system": "أنت مراجع مستقل صارم لسلامة المحتوى العربي. لا تفترض صحة الادعاءات الدينية أو الطبية. أجب JSON فقط: {"decision":"APPROVE" أو "REJECT","issues":[...],"notes":"..."}. ارفض أي ادعاء غير مسند أو محتوى غير مناسب للأطفال.",
          "messages": [{"role": "user", "content": f"القناة: {CHANNEL}\nالموضوع: {TOPIC}\nراجع النص والمشاهد التاليين: \n{script_text}"}]},
         {"x-api-key": os.environ["ANTHROPIC_API_KEY"], "anthropic-version": "2023-06-01"},
