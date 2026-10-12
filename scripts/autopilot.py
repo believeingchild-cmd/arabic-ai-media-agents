@@ -15,7 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import db
 
-PY = str(ROOT / "venv" / "Scripts" / "python.exe")
+PY = os.environ.get("PYTHON") or str(
+    ROOT / "venv" / (Path("Scripts") / "python.exe" if os.name == "nt" else Path("bin") / "python")
+)
+if not Path(PY).exists():
+    PY = sys.executable
 
 
 def log(m):
