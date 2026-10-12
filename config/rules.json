@@ -1,8 +1,8 @@
 {
-  "_comment": "THE AGENT'S BRAIN. Decides WHAT to make, WHERE to post it, and WHEN. Edit from the dashboard or by hand. Ships PAUSED - set paused=false (or click Resume in the dashboard) when you're ready to go live.",
-  "niche": "your topic here (e.g. self-healing, science facts, fitness motivation)",
-  "language": "en",
-  "voice": "en-US-AvaMultilingualNeural",
+  "_comment": "Arabic-first configuration. Keep paused until the first video is generated and reviewed. Do not enable public auto-publishing before safety and platform tests.",
+  "niche": "تعليم الأطفال العقيدة والأخلاق الإسلامية والمهن بأسلوب عربي بسيط وآمن",
+  "language": "ar",
+  "voice": "ar-SA-ZariyahNeural",
   "paused": true,
   "visuals": {
     "default": {
@@ -91,11 +91,11 @@
   },
   "limits": {
     "youtube": {
-      "per_day": 2,
+      "per_day": 1,
       "note": "API quota allows ~6/day. 2 is safe."
     },
     "instagram": {
-      "per_day": 3,
+      "per_day": 0,
       "note": "Platform cap is 25/day."
     },
     "facebook": {
@@ -142,209 +142,84 @@
     "bad_multiplier": 0.5,
     "_note": "A topic scoring 1.5x the average is a WINNER and gets more like it. Below 0.5x is a LOSER and gets avoided."
   },
-  "approval_mode": "auto",
+  "approval_mode": "manual",
   "growth_threshold": 50,
   "schedule_growth": [],
   "schedule_steady": [
     {
-      "id": "youtube-tue",
+      "id": "arabic-video-tue",
       "enabled": true,
-      "time": "06:00",
+      "time": "17:00",
       "days": "tue",
       "type": "video",
       "scenes": 4,
       "platforms": [
-        "youtube",
-        "telegram"
+        "youtube"
       ],
-      "note": "YouTube Short #1 of the week - 06:00 Tuesday, auto-made + auto-posted. (steady-state schedule, active once 50+ posts made)",
-      "jitter_minutes": [
-        10,
-        20,
-        35,
-        50,
-        70,
-        90
-      ]
+      "note": "فيديو عربي تجريبي — يُنشأ للمراجعة ولا ينشر تلقائيًا",
+      "jitter_minutes": []
     },
     {
-      "id": "youtube-fri",
+      "id": "arabic-video-thu",
       "enabled": true,
-      "time": "06:00",
-      "days": "fri",
+      "time": "17:00",
+      "days": "thu",
       "type": "video",
       "scenes": 4,
       "platforms": [
-        "youtube",
-        "telegram"
+        "youtube"
       ],
-      "note": "YouTube Short #2 of the week - 06:00 Friday, auto-made + auto-posted. (steady-state schedule, active once 50+ posts made)",
-      "jitter_minutes": [
-        10,
-        20,
-        35,
-        50,
-        70,
-        90
-      ]
+      "note": "فيديو عربي — مراجعة يدوية مطلوبة",
+      "jitter_minutes": []
     },
     {
-      "id": "filler-mon",
+      "id": "arabic-video-sat",
       "enabled": true,
-      "time": "13:00",
-      "days": "mon",
-      "type": "image",
-      "platforms": [
-        "instagram",
-        "facebook",
-        "threads",
-        "telegram"
-      ],
-      "jitter_minutes": [
-        10,
-        25,
-        45,
-        70,
-        100,
-        130
-      ],
-      "note": "Monday image post - light content, no YouTube upload (quota-safe). (steady-state schedule, active once 50+ posts made)"
-    },
-    {
-      "id": "filler-wed",
-      "enabled": true,
-      "time": "13:00",
-      "days": "wed",
-      "type": "text",
-      "platforms": [
-        "instagram",
-        "facebook",
-        "threads",
-        "telegram"
-      ],
-      "jitter_minutes": [
-        10,
-        25,
-        45,
-        70,
-        100,
-        130
-      ],
-      "note": "Wednesday text post - light content, no YouTube upload (quota-safe). (steady-state schedule, active once 50+ posts made)"
-    },
-    {
-      "id": "filler-thu",
-      "enabled": true,
-      "time": "13:00",
-      "days": "thu",
-      "type": "image",
-      "platforms": [
-        "instagram",
-        "facebook",
-        "threads",
-        "telegram"
-      ],
-      "jitter_minutes": [
-        10,
-        25,
-        45,
-        70,
-        100,
-        130
-      ],
-      "note": "Thursday image post - light content, no YouTube upload (quota-safe). (steady-state schedule, active once 50+ posts made)"
-    },
-    {
-      "id": "filler-sat",
-      "enabled": true,
-      "time": "13:00",
+      "time": "17:00",
       "days": "sat",
-      "type": "text",
+      "type": "video",
+      "scenes": 4,
       "platforms": [
-        "instagram",
-        "facebook",
-        "threads",
-        "telegram"
+        "youtube"
       ],
-      "jitter_minutes": [
-        10,
-        25,
-        45,
-        70,
-        100,
-        130
-      ],
-      "note": "Saturday text post - light content, no YouTube upload (quota-safe). (steady-state schedule, active once 50+ posts made)"
-    },
-    {
-      "id": "filler-sun",
-      "enabled": true,
-      "time": "13:00",
-      "days": "sun",
-      "type": "image",
-      "platforms": [
-        "instagram",
-        "facebook",
-        "threads",
-        "telegram"
-      ],
-      "jitter_minutes": [
-        10,
-        25,
-        45,
-        70,
-        100,
-        130
-      ],
-      "note": "Sunday image post - light content, no YouTube upload (quota-safe). (steady-state schedule, active once 50+ posts made)"
+      "note": "فيديو عربي — مراجعة يدوية مطلوبة",
+      "jitter_minutes": []
     }
   ],
   "ollama_model": "llama3.2:3b",
   "dynamic_fillers": {
-    "enabled": true,
+    "enabled": false,
     "count_range": [
-      5,
-      8
+      0,
+      0
     ],
     "window": [
       "09:00",
       "22:00"
     ],
-    "platforms": [
-      "instagram",
-      "facebook",
-      "threads",
-      "telegram"
-    ],
-    "_note": "Real day-to-day randomization: different COUNT (5-8) and TIMES each day. At most 1 of them lands in the 8-11am low-traffic window.",
-    "restricted_band": [
-      "08:00",
-      "11:00"
-    ],
-    "restricted_max": 1
+    "platforms": [],
+    "_note": "Disabled for Arabic pilot; prevents extra unscheduled posts."
   },
   "dynamic_videos": {
-    "enabled": true,
+    "enabled": false,
     "count_range": [
-      1,
-      2
+      0,
+      0
     ],
     "window": [
       "12:00",
       "21:00"
     ],
     "platforms": [
-      "youtube",
-      "tiktok",
-      "telegram"
+      "youtube"
     ],
-    "_note": "No more fixed 8am slot - random 1-2 videos/day between noon and 9pm, when people are actually online."
+    "_note": "Disabled; fixed schedule only."
   },
   "dynamic_tiktok": {
-    "enabled": true,
+    "enabled": false,
     "count_range": [
-      3,
-      3
+      0,
+      0
     ],
     "window": [
       "12:00",
@@ -353,7 +228,7 @@
     "platforms": [
       "tiktok"
     ],
-    "_note": "TikTok's OWN track, separate from the shared YouTube video schedule above - always exactly 3/day, all between 12pm-5pm, hard-restricted to TikTok only (never also posts to YouTube/Telegram/etc)."
+    "_note": "Disabled until TikTok API authorization and explicit review."
   },
   "dashboard_auth": {
     "enabled": false,
