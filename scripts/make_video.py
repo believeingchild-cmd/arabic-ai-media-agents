@@ -20,7 +20,7 @@ _whisper_model = None  # lazy singleton - load once per process, ~4s from cache
 ROOT   = Path(__file__).resolve().parents[1]
 FFMPEG  = os.environ.get("FFMPEG", "ffmpeg")
 FFPROBE = os.environ.get("FFPROBE", "ffprobe")
-EDGE   = str(ROOT/"venv"/"Scripts"/"edge-tts.exe")
+EDGE   = os.environ.get("EDGE_TTS") or shutil.which("edge-tts") or str(ROOT/"venv"/"Scripts"/"edge-tts.exe")
 OLLAMA = "http://127.0.0.1:11434/api/generate"
 def _active_model():
     """The single model configured on the Settings page. No fallback chain
@@ -34,7 +34,7 @@ def _active_model():
         return R.get("ollama_model") or "llama3.2:3b"
     except Exception:
         return "llama3.2:3b"
-VOICE  = "en-US-AvaMultilingualNeural"
+VOICE  = "ar-SA-ZariyahNeural" if json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en") == "ar" else "en-US-AvaMultilingualNeural"
 UA     = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 MAX_SCENE_SEC = 20
 W, H   = 720, 1280
@@ -104,6 +104,11 @@ def style_prompt(scene, style):
 
 
 def _scenes_prompt(topic, n, style, hook_format, strict=False):
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = ("Write ALL narration in clear, natural Arabic suitable for Saudi children and families. Keep image descriptions in English for the image generator. Avoid dialect-heavy slang, frightening language, and unsupported religious claims. JSON keys remain narration and image." if language == "ar" else "Write narration in English. Keep image descriptions in English.")
     """Numbered, positional instructions (Scene 1 / middle / last) instead of one
     dense paragraph - small models map compound requirements onto scene count far
     more reliably this way than when everything is stated as prose."""
@@ -114,6 +119,7 @@ def _scenes_prompt(topic, n, style, hook_format, strict=False):
     strict_note = (f"COUNT YOUR OBJECTS BEFORE RESPONDING - the array MUST have exactly {n} "
                    f"objects, not more, not fewer. This is critical.\n" if strict else "")
     return (f'Write narration for a {n}-scene short vertical video about "{topic}".\n'
+            f'{language_note}\n'
             f'Return ONLY a JSON array, no markdown, exactly this shape:\n'
             f'[{{"narration":"2-3 sentences","image":"detailed cinematic photo description"}}]\n'
             f'{strict_note}'
@@ -160,7 +166,8 @@ def _title_matches_topic(title, topic):
         return False
     def kw(s):
         return {w for w in re.findall(r"[a-z0-9]+", (s or "").lower()) if len(w) >= 4}
-    return bool(kw(title) & kw(topic))
+    arabic_words = lambda s: {w for w in re.findall(r"[\u0600-\u06FF]+|[a-z0-9]+", (s or "").lower()) if len(w) >= 3}
+    return bool(kw(title) & kw(topic)) or bool(arabic_words(title) & arabic_words(topic))
 
 
 BROKEN_CONTENT_PATTERNS = (
@@ -199,7 +206,13 @@ def generate_hook_meta(topic):
     written to meta.json/caption.txt so every platform (YouTube, TikTok, Telegram)
     posts the same caption instead of each guessing separately or, for Telegram/
     TikTok, getting none at all."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write title and hook in natural Arabic; hashtags may be Arabic or commonly used platform tags." if language == "ar" else "Write title and hook in English."
     prompt = (
+        language_note + '\n' +
         'Write short-form video metadata for a video about: "' + (topic or "") + '"\n'
         'Return ONLY JSON: {"title":"...","hook":"...","hashtags":["#tag1","#tag2",...]}\n'
         "title = catchy, curiosity-driven, under 70 characters, no quotes, no hashtags in it.\n"
@@ -379,7 +392,11 @@ def transcribe_words(mp3):
     global _whisper_model
     if _whisper_model is None:
         from faster_whisper import WhisperModel
-        _whisper_model = WhisperModel("base.en", device="cpu", compute_type="int8")
+        try:
+            language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+        except Exception:
+            language = "en"
+        _whisper_model = WhisperModel("base" if language == "ar" else "base.en", device="cpu", compute_type="int8")
     segments, _ = _whisper_model.transcribe(mp3, word_timestamps=True)
     words = []
     for seg in segments:
