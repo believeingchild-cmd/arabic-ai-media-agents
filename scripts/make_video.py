@@ -20,7 +20,7 @@ _whisper_model = None  # lazy singleton - load once per process, ~4s from cache
 ROOT   = Path(__file__).resolve().parents[1]
 FFMPEG  = os.environ.get("FFMPEG", "ffmpeg")
 FFPROBE = os.environ.get("FFPROBE", "ffprobe")
-EDGE   = str(ROOT/"venv"/"Scripts"/"edge-tts.exe")
+EDGE   = os.environ.get("EDGE_TTS") or shutil.which("edge-tts") or str(ROOT / "venv" / (Path("Scripts") / "edge-tts.exe" if os.name == "nt" else Path("bin") / "edge-tts"))
 OLLAMA = "http://127.0.0.1:11434/api/generate"
 def _active_model():
     """The single model configured on the Settings page. No fallback chain
@@ -34,7 +34,7 @@ def _active_model():
         return R.get("ollama_model") or "llama3.2:3b"
     except Exception:
         return "llama3.2:3b"
-VOICE  = "en-US-AvaMultilingualNeural"
+VOICE  = "ar-SA-ZariyahNeural" if json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en") == "ar" else "en-US-AvaMultilingualNeural"
 UA     = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 MAX_SCENE_SEC = 20
 W, H   = 720, 1280
@@ -104,6 +104,11 @@ def style_prompt(scene, style):
 
 
 def _scenes_prompt(topic, n, style, hook_format, strict=False):
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = ("Write ALL narration in clear, natural Arabic suitable for Saudi children and families. Keep image descriptions in English for the image generator. Avoid dialect-heavy slang, frightening language, and unsupported religious claims. JSON keys remain narration and image." if language == "ar" else "Write narration in English. Keep image descriptions in English.")
     """Numbered, positional instructions (Scene 1 / middle / last) instead of one
     dense paragraph - small models map compound requirements onto scene count far
     more reliably this way than when everything is stated as prose."""
@@ -114,6 +119,7 @@ def _scenes_prompt(topic, n, style, hook_format, strict=False):
     strict_note = (f"COUNT YOUR OBJECTS BEFORE RESPONDING - the array MUST have exactly {n} "
                    f"objects, not more, not fewer. This is critical.\n" if strict else "")
     return (f'Write narration for a {n}-scene short vertical video about "{topic}".\n'
+            f'{language_note}\n'
             f'Return ONLY a JSON array, no markdown, exactly this shape:\n'
             f'[{{"narration":"2-3 sentences","image":"detailed cinematic photo description"}}]\n'
             f'{strict_note}'
@@ -160,7 +166,8 @@ def _title_matches_topic(title, topic):
         return False
     def kw(s):
         return {w for w in re.findall(r"[a-z0-9]+", (s or "").lower()) if len(w) >= 4}
-    return bool(kw(title) & kw(topic))
+    arabic_words = lambda s: {w for w in re.findall(r"[\u0600-\u06FF]+|[a-z0-9]+", (s or "").lower()) if len(w) >= 3}
+    return bool(kw(title) & kw(topic)) or bool(arabic_words(title) & arabic_words(topic))
 
 
 BROKEN_CONTENT_PATTERNS = (
@@ -199,7 +206,13 @@ def generate_hook_meta(topic):
     written to meta.json/caption.txt so every platform (YouTube, TikTok, Telegram)
     posts the same caption instead of each guessing separately or, for Telegram/
     TikTok, getting none at all."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write title and hook in natural Arabic; hashtags may be Arabic or commonly used platform tags." if language == "ar" else "Write title and hook in English."
     prompt = (
+        language_note + '\n' +
         'Write short-form video metadata for a video about: "' + (topic or "") + '"\n'
         'Return ONLY JSON: {"title":"...","hook":"...","hashtags":["#tag1","#tag2",...]}\n'
         "title = catchy, curiosity-driven, under 70 characters, no quotes, no hashtags in it.\n"
@@ -247,8 +260,14 @@ def editorial_review(hook, topic):
     go through the structural gate but not this style pass, to keep total
     per-video generation time reasonable given how many model calls a video
     already needs."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write or preserve the caption in natural Arabic." if language == "ar" else "Write or preserve the caption in natural English."
     prompt = (
-        'You are an expert content editor reviewing a video caption before it goes live.\n'
+        language_note + '\n' +
+        'You are an expert content editor reviewing a video caption before it goes live.\\n'
         'Topic: "' + (topic or "") + '"\n'
         'Draft: "' + hook + '"\n\n'
         "Judge it as a professional publisher would: is it clear, engaging, and does it read "
@@ -276,8 +295,14 @@ def generate_blog_body(topic, hook):
     actually gets posted to any social platform, so existing posting behavior
     is completely unchanged. Best-effort: falls back to the short hook if
     generation fails, same as everything else in this pipeline."""
+    try:
+        language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+    except Exception:
+        language = "en"
+    language_note = "Write the blog paragraph in clear, natural Arabic." if language == "ar" else "Write the blog paragraph in English."
     prompt = (
-        'Write a longer blog-post paragraph (120-200 words) about: "' + (topic or "") + '"\n'
+        language_note + '\n' +
+        'Write a longer blog-post paragraph (120-200 words) about: "' + (topic or "") + '"\\n'
         "This is for a blog reader, not a social caption - give real context and detail, "
         "not just a punchy hook. Warm, engaging tone. Return ONLY the paragraph text, "
         "no title, no hashtags, no quotes around it."
@@ -379,7 +404,11 @@ def transcribe_words(mp3):
     global _whisper_model
     if _whisper_model is None:
         from faster_whisper import WhisperModel
-        _whisper_model = WhisperModel("base.en", device="cpu", compute_type="int8")
+        try:
+            language = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("language", "en")
+        except Exception:
+            language = "en"
+        _whisper_model = WhisperModel("base" if language == "ar" else "base.en", device="cpu", compute_type="int8")
     segments, _ = _whisper_model.transcribe(mp3, word_timestamps=True)
     words = []
     for seg in segments:
@@ -576,7 +605,11 @@ def main():
     # to reuse (keeps visual style and playlist choice consistent).
     category = variety.classify_category(a.topic)
     style = variety.pick_style(category)
-    voice = variety.pick_voice()
+    try:
+        _rules = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8"))
+    except Exception:
+        _rules = {}
+    voice = _rules.get("voice") or variety.pick_voice()
     hook_format = variety.pick_hook_format()
     (job / "category.txt").write_text(category, encoding="utf-8")
     log(f"    category={category}  style='{style[:40]}...'  voice={voice}")
@@ -687,6 +720,23 @@ def main():
                 "-show_entries","stream=codec_name,width,height,bit_rate",
                 "-of","default=noprint_wrappers=1", str(final)])
     vlen = float(re.search(r"duration=([\d.]+)", info).group(1))
+    # Fail-closed review manifest: every video must be explicitly reviewed before publish.py accepts it.
+    try:
+        _active_channel = json.loads((ROOT / "config" / "rules.json").read_text(encoding="utf-8")).get("active_channel", "children")
+    except Exception:
+        _active_channel = "children"
+    review_manifest = {
+        "channel": _active_channel if _active_channel in ("children", "public") else "children",
+        "title": title,
+        "script": narration,
+        "video_path": str(final.resolve()),
+        "sources": [],
+        "religious_references": [],
+        "child_safety_review": False,
+        "rights_review": False,
+        "editorial_review": False
+    }
+    (job / "quality_gate.json").write_text(json.dumps(review_manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     db.finish_run(run_id, status="ok", stage="done", scenes=len(scenes),
                   seconds=round(vlen,1), build_secs=round(time.time()-t0,1),
                   size_kb=int(final.stat().st_size/1024), path=str(final))
